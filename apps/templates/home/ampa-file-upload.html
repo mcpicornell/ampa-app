@@ -37,7 +37,7 @@
           {% csrf_token %}
 
           <!-- INPUT REAL -->
-          <input type="file" id="ampa-file" name="ampa_file" class="d-none">
+          <input type="file" id="ampa-file" name="ampa_file" class="d-none" accept="image/*" capture="environment">
 
           <!-- UI visible -->
           <label class="upload-box w-50 mx-auto d-block text-center" for="ampa-file" style="cursor:pointer;">

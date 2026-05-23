@@ -20,7 +20,6 @@ def ampa_upload(request):
             request.session["ampa_registries"][result_id] = registry.model_dump()
             request.session.modified = True
 
-            messages.success(request, "File uploaded successfully")
             return redirect("ampa_result", result_id=result_id)
 
         except Exception as e:
