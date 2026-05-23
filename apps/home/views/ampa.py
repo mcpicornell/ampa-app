@@ -26,7 +26,6 @@ def ampa_upload(request):
             messages.error(request, str(e))
             return render(request, "home/ampa-file-upload.html")
 
-    messages.warning(request, "Invalid request")
     return render(request, "home/ampa-file-upload.html")
 
 
