@@ -1,0 +1,105 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block content %}
+
+<div class="header pb-6 d-flex align-items-center" 
+     style="min-height: 200px; background-image: url(/static/assets/img/theme/profile-cover.jpg); background-size: cover; background-position: center top;">
+  <!-- Mask -->
+  <span class="mask bg-gradient-default opacity-8"></span>
+  <!-- Header container -->
+  <div class="container-fluid d-flex align-items-center">
+    <div class="row">
+    </div>
+  </div>
+</div>
+<!-- Page content -->
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl-8 order-xl-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col-8">
+              <h3 class="mb-0">AMPA Result </h3>
+            </div>
+            <div class="col-4 text-right">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="container-fluid mt-4">
+
+<div class="row mt-4">
+
+  <!-- SYSTOLIC -->
+  <div class="col-lg-6">
+
+    <div class="card">
+      <div class="card-body">
+
+        <h4 class="mb-3">Average Systolic</h4>
+
+        <div class="row">
+          <div class="col">
+            <h6 class="text-muted">Morning</h6>
+            <h3>{{ result.systolic.morning|floatformat:2 }}</h3>
+          </div>
+
+          <div class="col">
+            <h6 class="text-muted">Afternoon</h6>
+            <h3>{{ result.systolic.afternoon|floatformat:2 }}</h3>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DIASTOLIC -->
+  <div class="col-lg-6">
+
+    <div class="card">
+      <div class="card-body">
+
+        <h4 class="mb-3">Average Diastolic</h4>
+
+        <div class="row">
+          <div class="col">
+            <h6 class="text-muted">Morning</h6>
+            <h3>{{ result.diastolic.morning|floatformat:2 }}</h3>
+          </div>
+
+          <div class="col">
+            <h6 class="text-muted">Afternoon</h6>
+            <h3>{{ result.diastolic.afternoon|floatformat:2 }}</h3>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/footer.html" %}
+
+</div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}

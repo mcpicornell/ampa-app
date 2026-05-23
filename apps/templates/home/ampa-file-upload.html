@@ -1,0 +1,84 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block content %}
+<style>
+  .upload-box {
+    border: 2px dashed #ccc;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+  }
+</style>
+<div class="header pb-6 d-flex align-items-center"
+  style="min-height: 200px; background-image: url(/static/assets/img/theme/profile-cover.jpg); background-size: cover; background-position: center top;">
+  <!-- Mask -->
+  <span class="mask bg-gradient-default opacity-8"></span>
+  <!-- Header container -->
+</div>
+<!-- Page content -->
+<div class="container-fluid mt--6">
+  <div class="col-xl-8 order-xl-1">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col-8">
+            <h3 class="mb-0">AMPA Upload</h3>
+          </div>
+          <div class="col-4 text-right">
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'ampa_upload' %}">
+          {% csrf_token %}
+
+          <!-- INPUT REAL -->
+          <input type="file" id="ampa-file" name="ampa_file" class="d-none">
+
+          <!-- UI visible -->
+          <label class="upload-box w-50 mx-auto d-block text-center" for="ampa-file" style="cursor:pointer;">
+            <strong id="file-title">Select AMPA file</strong><br>
+            <small id="file-name" class="text-muted">No file chosen</small>
+          </label>
+
+          <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-success mt-4">
+              Upload File
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% include "includes/footer.html" %}
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById('ampa-file');
+    const label = document.getElementById('file-name');
+    const title = document.getElementById('file-title');
+
+    input.addEventListener('change', function () {
+      label.textContent = this.files.length > 0
+        ? this.files[0].name
+        : 'No file chosen';
+
+      title.textContent = this.files.length > 0
+        ? 'AMPA file selected'
+        : 'Select AMPA file';
+    });
+  });
+</script>
+{% endblock javascripts %}
