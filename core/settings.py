@@ -123,3 +123,4 @@ STATICFILES_DIRS = (os.path.join(CORE_DIR, "apps/static"),)
 # LLM
 GOOGLE_LLM_MODEL = config("LLM_MODEL", default="gemini-2.5-flash")
 GOOGLE_API_KEY = config("GOOGLE_API_KEY")
+LLM_RESPONSE_HARDCODED = config("LLM_RESPONSE_HARDCODED", default=False, cast=bool)

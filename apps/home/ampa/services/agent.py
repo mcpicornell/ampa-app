@@ -38,7 +38,7 @@ class AmpaReaderAgent:
                 ]
             )
         except Exception as e:
-            raise Exception("Error reading AMPA file from Agent") from e
+            raise Exception(f"Error reading AMPA file from Agent: {e}") from e
 
 
 @lru_cache
