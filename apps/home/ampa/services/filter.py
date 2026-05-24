@@ -14,24 +14,7 @@ class HomeBloodPressureFilter:
         self, data: HomeBloodPressureRegistry
     ) -> FilteredHomeBloodPressureRegistry:
 
-        filtered_days = []
-
-        for day in data.daily_records:
-            if self._is_day_1(day):
-                continue
-
-            morning_filtered = self._clean_period(day.morning, is_morning=True)
-
-            evening_filtered = self._clean_period(day.evening, is_morning=False)
-
-            filtered_days.append(
-                DailyBloodPressureRecordFiltered(
-                    day=day.day,
-                    morning=morning_filtered,
-                    evening=evening_filtered,
-                )
-            )
-
+        filtered_daily_records = self._get_filtered_daily_records(data.daily_records)
         return FilteredHomeBloodPressureRegistry(
             code=data.code,
             patient_name=data.patient_name,
@@ -40,7 +23,7 @@ class HomeBloodPressureFilter:
             phone_number=data.phone_number,
             physician_name=data.physician_name,
             pharmacist_name=data.pharmacist_name,
-            daily_records=filtered_days,
+            daily_records=filtered_daily_records,
         )
 
     def _clean_period(self, period, is_morning):
@@ -65,6 +48,26 @@ class HomeBloodPressureFilter:
 
     def _is_day_1(self, day):
         return day.day == 1
+
+    def _get_filtered_daily_records(self, daily_records):
+        filtered_days = []
+        for day in daily_records:
+            if self._is_day_1(day):
+                continue
+
+            morning_filtered = self._clean_period(day.morning, is_morning=True)
+
+            evening_filtered = self._clean_period(day.evening, is_morning=False)
+
+            filtered_days.append(
+                DailyBloodPressureRecordFiltered(
+                    day=day.day,
+                    morning=morning_filtered,
+                    evening=evening_filtered,
+                )
+            )
+
+        return filtered_days
 
 
 @lru_cache

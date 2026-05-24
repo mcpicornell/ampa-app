@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from ..entities import (
+from apps.home.ampa.entities import (
     AmpaResult,
     DiastolicResult,
     FilteredHomeBloodPressureRegistry,
@@ -11,21 +11,34 @@ from ..entities import (
 class AmpaResultCalculator:
     def calculate(self, data: FilteredHomeBloodPressureRegistry) -> AmpaResult:
 
-        systolic_morning = self._calculate_avg(data, "systolic", "morning")
-        systolic_afternoon = self._calculate_avg(data, "systolic", "evening")
-
-        diastolic_morning = self._calculate_avg(data, "diastolic", "morning")
-        diastolic_afternoon = self._calculate_avg(data, "diastolic", "evening")
+        systolic_result = self._calculate_systolic_result(data)
+        diastolic_result = self._calculate_diastolic_result(data)
 
         return AmpaResult(
             systolic=SystolicResult(
-                morning=systolic_morning,
-                afternoon=systolic_afternoon,
+                morning=systolic_result.morning,
+                afternoon=systolic_result.afternoon,
             ),
             diastolic=DiastolicResult(
-                morning=diastolic_morning,
-                afternoon=diastolic_afternoon,
+                morning=diastolic_result.morning,
+                afternoon=diastolic_result.afternoon,
             ),
+        )
+
+    def _calculate_systolic_result(self, data):
+        systolic_morning = self._calculate_avg(data, "systolic", "morning")
+        systolic_afternoon = self._calculate_avg(data, "systolic", "evening")
+        return SystolicResult(
+            morning=systolic_morning,
+            afternoon=systolic_afternoon,
+        )
+
+    def _calculate_diastolic_result(self, data):
+        diastolic_morning = self._calculate_avg(data, "diastolic", "morning")
+        diastolic_afternoon = self._calculate_avg(data, "diastolic", "evening")
+        return DiastolicResult(
+            morning=diastolic_morning,
+            afternoon=diastolic_afternoon,
         )
 
     def _calculate_avg(self, data, key, period_name) -> float:

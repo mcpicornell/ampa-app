@@ -1,3 +1,4 @@
+import time
 import uuid
 
 from django.contrib import messages
@@ -6,20 +7,22 @@ from django.shortcuts import redirect, render
 
 from apps.home.ampa.controller import get_ampa_file_controller
 
+ONE_DAY = 60 * 60 * 24
+
 
 @login_required(login_url="/login/")
 def ampa_upload(request):
     if request.method == "POST" and request.FILES.get("ampa_file"):
         try:
             file = request.FILES["ampa_file"]
-
             controller = get_ampa_file_controller()
             registry = controller.upload_ampa_file(file)
+
             result_id = str(uuid.uuid4())
             request.session.setdefault("ampa_registries", {})
             request.session["ampa_registries"][result_id] = registry.model_dump()
             request.session.modified = True
-
+            request.session.set_expiry(ONE_DAY)
             return redirect("ampa_result", result_id=result_id)
 
         except Exception as e:

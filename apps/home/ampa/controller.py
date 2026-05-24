@@ -8,6 +8,7 @@ from apps.home.ampa.entities import (
 )
 from apps.home.ampa.entities.ampa_result import AmpaResult
 from apps.home.ampa.services import (
+    get_ampa_reader_agent,
     get_ampa_result_calculator,
     get_home_blood_pressure_filter,
 )
@@ -23,6 +24,12 @@ class AmpaFileController:
         return calculator.calculate(registry_filtered)
 
     def upload_ampa_file(self, file) -> HomeBloodPressureRegistry:
+
+        is_agent_implemented = False
+        if is_agent_implemented:
+            agent = get_ampa_reader_agent()
+            return agent.read_ampa(file)
+
         return HomeBloodPressureRegistry(
             code="AMPA-TEST-001",
             patient_name="John Doe",

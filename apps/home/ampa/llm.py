@@ -1,12 +1,13 @@
 from functools import lru_cache
 
-from decouple import config
+from django.conf import settings
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 @lru_cache
-def get_llm(model: str | None = None):
+def get_google_llm(model: str | None = None, temperature: int = 0):
     return ChatGoogleGenerativeAI(
-        model=model or config("LLM_MODEL", default="gemini-2.5-flash"),
-        google_api_key=config("GOOGLE_API_KEY"),
+        model=model or settings.GOOGLE_LLM_MODEL,
+        google_api_key=settings.GOOGLE_API_KEY,
+        temperature=temperature,
     )
