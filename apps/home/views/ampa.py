@@ -1,4 +1,3 @@
-import time
 import uuid
 
 from django.contrib import messages
@@ -6,6 +5,7 @@ from django.contrib.auth.views import login_required
 from django.shortcuts import redirect, render
 
 from apps.home.ampa.controller import get_ampa_file_controller
+from apps.home.ampa.entities import HomeBloodPressureRegistry
 
 ONE_DAY = 60 * 60 * 24
 
@@ -36,13 +36,14 @@ def ampa_upload(request):
 def ampa_result(request, result_id):
 
     registries = request.session.get("ampa_registries", {})
-    registry = registries.get(result_id)
+    data = registries.get(result_id)
 
-    if not registry:
+    if not data:
         messages.error(request, f"Registry '{result_id}' not found")
         return render(request, "home/ampa-file-upload.html")
 
     controller = get_ampa_file_controller()
+    registry = HomeBloodPressureRegistry(**data)
     result = controller.calculate_ampa_result(registry)
 
     return render(

@@ -1,4 +1,4 @@
-from .ampa_result import AmpaResult, DiastolicResult, SystolicResult
+from .ampa_result import AmpaResult, DailyResult
 from .home_blood_pressure_filtered import (
     BloodPressureReadingFiltered,
     DailyBloodPressureRecordFiltered,
@@ -14,8 +14,7 @@ from .home_blood_pressure_registry import (
 
 __all__ = [
     "AmpaResult",
-    "DiastolicResult",
-    "SystolicResult",
+    "DailyResult",
     "BloodPressureReading",
     "BloodPressureReadingFiltered",
     "DailyBloodPressureRecord",

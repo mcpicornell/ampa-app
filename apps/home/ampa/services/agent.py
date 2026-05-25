@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from django.core.files.uploadedfile import UploadedFile
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from apps.home.ampa.entities import HomeBloodPressureRegistry
@@ -9,10 +10,9 @@ from apps.home.ampa.services.utils import encode_image
 
 
 class AmpaReaderAgent:
-    def read_ampa(self, file) -> HomeBloodPressureRegistry:
+    def read_ampa(self, file: UploadedFile) -> HomeBloodPressureRegistry:
         try:
             llm = get_llm()
-
             llm_structured = llm.with_structured_output(
                 HomeBloodPressureRegistry, method="json_schema", strict=True
             )
