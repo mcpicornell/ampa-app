@@ -9,49 +9,51 @@ from apps.home.ampa.entities import (
 
 
 class AmpaResultCalculator:
-    def calculate(self, data: FilteredHomeBloodPressureRegistry) -> AmpaResult:
+    def calculate(self, registry: FilteredHomeBloodPressureRegistry) -> AmpaResult:
 
-        systolic_result = self._calculate_systolic_result(data)
-        diastolic_result = self._calculate_diastolic_result(data)
+        systolic_result = self._calculate_systolic_result(registry)
+        diastolic_result = self._calculate_diastolic_result(registry)
 
         return AmpaResult(
-            systolic=SystolicResult(
-                morning=systolic_result.morning,
-                afternoon=systolic_result.afternoon,
-            ),
-            diastolic=DiastolicResult(
-                morning=diastolic_result.morning,
-                afternoon=diastolic_result.afternoon,
-            ),
+            systolic=systolic_result,
+            diastolic=diastolic_result,
         )
 
-    def _calculate_systolic_result(self, data):
-        systolic_morning = self._calculate_avg(data, "systolic", "morning")
-        systolic_afternoon = self._calculate_avg(data, "systolic", "evening")
+    def _calculate_systolic_result(
+        self, registry: FilteredHomeBloodPressureRegistry
+    ) -> SystolicResult:
+        systolic_morning = self._calculate_avg(registry, "systolic", "morning")
+        systolic_afternoon = self._calculate_avg(registry, "systolic", "evening")
         return SystolicResult(
             morning=systolic_morning,
             afternoon=systolic_afternoon,
         )
 
-    def _calculate_diastolic_result(self, data):
-        diastolic_morning = self._calculate_avg(data, "diastolic", "morning")
-        diastolic_afternoon = self._calculate_avg(data, "diastolic", "evening")
+    def _calculate_diastolic_result(
+        self, registry: FilteredHomeBloodPressureRegistry
+    ) -> DiastolicResult:
+        diastolic_morning = self._calculate_avg(registry, "diastolic", "morning")
+        diastolic_afternoon = self._calculate_avg(registry, "diastolic", "evening")
         return DiastolicResult(
             morning=diastolic_morning,
             afternoon=diastolic_afternoon,
         )
 
-    def _calculate_avg(self, data, key, period_name) -> float:
+    def _calculate_avg(
+        self, registry: FilteredHomeBloodPressureRegistry, key: str, period_name: str
+    ) -> float:
         values = [
             getattr(reading, key)
-            for reading in self._iter_period(data, period_name)
+            for reading in self._iter_period(registry, period_name)
             if getattr(reading, key) is not None
         ]
 
         return sum(values) / len(values) if values else 0.0
 
-    def _iter_period(self, data, period_name):
-        for day in data.daily_records:
+    def _iter_period(
+        self, registry: FilteredHomeBloodPressureRegistry, period_name: str
+    ):
+        for day in registry.daily_records:
             period = getattr(day, period_name)
             yield from period.readings
 

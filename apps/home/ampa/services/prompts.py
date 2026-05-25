@@ -29,9 +29,9 @@ Each reading includes:
 
 ## DATA QUALITY RULES
 
-- systolic range: 50–300 mmHg
-- diastolic range: 30–200 mmHg
-- pulse range: 20–250 bpm
+- systolic range: 30–250 mmHg
+- diastolic range: 30–250 mmHg
+- pulse range: 10–250 bpm
 - Ignore any values outside realistic physiological ranges unless explicitly stated in the document.
 
 ## OUTPUT REQUIREMENTS

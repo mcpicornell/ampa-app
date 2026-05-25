@@ -5,15 +5,15 @@ from pydantic import BaseModel, Field
 
 class BloodPressureReading(BaseModel):
     systolic: Optional[int] = Field(
-        None, ge=50, le=300, description="Presión arterial sistólica (máxima) en mmHg"
+        None, ge=30, le=250, description="Presión arterial sistólica (máxima) en mmHg"
     )
 
     diastolic: Optional[int] = Field(
-        None, ge=30, le=200, description="Presión arterial diastólica (mínima) en mmHg"
+        None, ge=30, le=250, description="Presión arterial diastólica (mínima) en mmHg"
     )
 
     pulse: Optional[int] = Field(
-        None, ge=20, le=250, description="Pulso cardíaco en pulsaciones por minuto"
+        None, ge=10, le=250, description="Pulso cardíaco en pulsaciones por minuto"
     )
 
 
