@@ -3,9 +3,11 @@ from typing import Literal
 
 from apps.home.ampa.constants import DIASTOLIC, EVENING, MORNING, SYSTOLIC
 from apps.home.ampa.entities import (
+    AfternoonResult,
     AmpaResult,
     DailyResult,
     FilteredHomeBloodPressureRegistry,
+    MorningResult,
 )
 
 
@@ -16,8 +18,14 @@ class AmpaResultCalculator:
         diastolic_result = self._calculate_result(registry, DIASTOLIC)
 
         return AmpaResult(
-            systolic=systolic_result,
-            diastolic=diastolic_result,
+            morning=MorningResult(
+                systolic=systolic_result.morning,
+                diastolic=diastolic_result.morning,
+            ),
+            afternoon=AfternoonResult(
+                systolic=systolic_result.afternoon,
+                diastolic=diastolic_result.afternoon,
+            ),
         )
 
     def _calculate_result(

@@ -1,4 +1,4 @@
-from .ampa_result import AmpaResult, DailyResult
+from .ampa_result import AfternoonResult, AmpaResult, DailyResult, MorningResult
 from .home_blood_pressure_filtered import (
     BloodPressureReadingFiltered,
     DailyBloodPressureRecordFiltered,
@@ -23,4 +23,6 @@ __all__ = [
     "HomeBloodPressureRegistry",
     "MeasurementPeriod",
     "MeasurementPeriodFiltered",
+    "MorningResult",
+    "AfternoonResult",
 ]

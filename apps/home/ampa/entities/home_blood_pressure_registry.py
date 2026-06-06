@@ -1,20 +1,30 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+NONE_VALUES = (0, "0", "", "null")
 
 
 class BloodPressureReading(BaseModel):
     systolic: Optional[int] = Field(
-        None, ge=30, le=250, description="Presión arterial sistólica (máxima) en mmHg"
+        None, ge=30, le=250, description="Presión arterial sistólica (MAXIMA) en mmHg"
     )
 
     diastolic: Optional[int] = Field(
-        None, ge=30, le=250, description="Presión arterial diastólica (mínima) en mmHg"
+        None, ge=30, le=250, description="Presión arterial diastólica (MINIMA) en mmHg"
     )
 
     pulse: Optional[int] = Field(
-        None, ge=10, le=250, description="Pulso cardíaco en pulsaciones por minuto"
+        None,
+        ge=10,
+        le=250,
+        description="Pulso cardíaco en pulsaciones (PULSO) por minuto",
     )
+
+    @field_validator("systolic", "diastolic", "pulse", mode="before")
+    @classmethod
+    def convert_zero_to_none(cls, value):
+        return None if value in NONE_VALUES else value
 
 
 class MeasurementPeriod(BaseModel):

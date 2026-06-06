@@ -18,6 +18,8 @@ from apps.home.ampa.services import (
 )
 from apps.home.ampa.utils import build_fake_registry
 
+from .llm import get_google_llm as get_llm
+
 
 class AmpaFileController:
     def __init__(
@@ -26,11 +28,13 @@ class AmpaFileController:
         filter_service: HomeBloodPressureFilter,
         calculator: AmpaResultCalculator,
         ampa_reader_agent: AmpaReaderAgent,
+        json_debug_active: bool = False,
     ):
         self._local_json_service = local_json_service
         self._filter_service = filter_service
         self._calculator = calculator
         self._ampa_reader_agent = ampa_reader_agent
+        self._json_debug_active = json_debug_active
 
     def calculate_ampa_result(
         self, registry: HomeBloodPressureRegistry, datetime_str: str
@@ -54,19 +58,23 @@ class AmpaFileController:
 
         registry = self._ampa_reader_agent.read_ampa(file)
 
-        # Save to local JSON for debugging
         self._local_json_service.write_json(
             f"ampa_registry_{datetime_str}.json", registry.model_dump()
         )
 
         return registry
 
+    def _write_json(self, filename: str, data: dict):
+        if self._json_debug_active:
+            self._local_json_service.write_json(filename, data)
+
 
 @lru_cache
-def get_ampa_file_controller() -> AmpaFileController:
+def get_ampa_file_controller(json_debug_active: bool = False) -> AmpaFileController:
     return AmpaFileController(
         local_json_service=get_local_json_service(settings.LOCAL_JSON_DIR),
         filter_service=get_home_blood_pressure_filter(),
         calculator=get_ampa_result_calculator(),
-        ampa_reader_agent=get_ampa_reader_agent(),
+        ampa_reader_agent=get_ampa_reader_agent(get_llm()),
+        json_debug_active=json_debug_active,
     )
