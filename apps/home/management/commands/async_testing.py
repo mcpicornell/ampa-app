@@ -15,6 +15,13 @@ class Command(BaseCommand):
 
     async def async_handle(self, *args, **options):
         file_path = Path(__file__).resolve().parent / "ampa.jpeg"
+        from django.conf import settings
+        from google import genai
+
+        client = genai.Client(api_key=settings.GOOGLE_API_KEY)
+
+        for m in client.models.list():
+            print(m.name)
 
         with open(file_path, "rb") as f:
             file = SimpleUploadedFile(
@@ -24,8 +31,8 @@ class Command(BaseCommand):
             )
         controller = get_ampa_file_controller(json_debug_active=True)
         datetime_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        registry: HomeBloodPressureRegistry = await controller.upload_ampa_file(
+        registry: HomeBloodPressureRegistry = controller.upload_ampa_file(
             file, datetime_str
         )
-        result = await controller.calculate_ampa_result(registry, datetime_str)
+        result = controller.calculate_ampa_result(registry, datetime_str)
         print("Done")

@@ -18,8 +18,6 @@ from apps.home.ampa.services import (
 )
 from apps.home.ampa.utils import build_fake_registry
 
-from .llm import get_google_llm as get_llm
-
 
 class AmpaFileController:
     def __init__(
@@ -75,6 +73,6 @@ def get_ampa_file_controller(json_debug_active: bool = False) -> AmpaFileControl
         local_json_service=get_local_json_service(settings.LOCAL_JSON_DIR),
         filter_service=get_home_blood_pressure_filter(),
         calculator=get_ampa_result_calculator(),
-        ampa_reader_agent=get_ampa_reader_agent(get_llm()),
+        ampa_reader_agent=get_ampa_reader_agent(),
         json_debug_active=json_debug_active,
     )
