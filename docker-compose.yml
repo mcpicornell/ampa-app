@@ -1,28 +1,23 @@
-version: '3.8'
 services:
-  appseed-app:
-    container_name: appseed_app
+  ampa-app:
+    ports:
+      - "8008:8008"
     restart: always
-    env_file: .env
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - SERVER=${SERVER}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - PYTHONPATH=/app
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     build: .
+    volumes:
+      - ./:/app:z
     networks:
       - db_network
       - web_network
-  nginx:
-    container_name: nginx
-    restart: always
-    image: "nginx:latest"
-    ports:
-      - "85:85"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-    networks:
-      - web_network
-    depends_on: 
-      - appseed-app
+      - django_network
+    userns_mode: keep-id
 networks:
   db_network:
-    driver: bridge
   web_network:
-    driver: bridge
- 
+  django_network:
