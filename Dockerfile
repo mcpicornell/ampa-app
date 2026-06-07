@@ -20,6 +20,4 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python manage.py collectstatic --noinput
-# gunicorn
-#CMD ["gunicorn", "--config", "gunicorn-cfg.py", "core.wsgi"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8008"]
+CMD ["uvicorn", "core.asgi:application", "--host", "0.0.0.0", "--port", "8008"]
