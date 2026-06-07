@@ -6,13 +6,6 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-MODELS = (
-    "gemini-3.1-flash-lite",
-    "gemini-2.5-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-2.5-flash",
-)
-
 FAILED_MODELS_KEY = "llm_failed_models"
 FAILED_MODELS_DATE_KEY = "llm_failed_models_date"
 
@@ -25,8 +18,9 @@ class LLMWithFallback:
         "resource exhausted",
     ]
 
-    def __init__(self, model_factory):
+    def __init__(self, model_factory, models: list[str]):
         self.model_factory = model_factory
+        self.models = models
 
     def invoke_with_structured_output(
         self,
@@ -38,7 +32,7 @@ class LLMWithFallback:
         last_error = None
         failed_models = self._get_failed_models()
 
-        for model in MODELS:
+        for model in self.models:
             if model in failed_models:
                 logger.debug(f"Skipping failed model: {model}")
                 continue
@@ -92,5 +86,5 @@ class LLMWithFallback:
         cache.set(FAILED_MODELS_KEY, failed, timeout=None)
 
 
-def get_llm_with_fallback(model_factory):
-    return LLMWithFallback(model_factory)
+def get_llm_with_fallback(model_factory, models: list[str]):
+    return LLMWithFallback(model_factory, models)

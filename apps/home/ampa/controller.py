@@ -4,9 +4,9 @@ from functools import lru_cache
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
-from apps.home.ampa.entities import HomeBloodPressureRegistry
-from apps.home.ampa.entities.ampa_result import AmpaResult
-from apps.home.ampa.services import (
+from .constants import GEMINI_MODELS
+from .entities import AmpaResult, HomeBloodPressureRegistry
+from .services import (
     AmpaReaderAgent,
     AmpaResultCalculator,
     HomeBloodPressureFilter,
@@ -16,7 +16,7 @@ from apps.home.ampa.services import (
     get_home_blood_pressure_filter,
     get_local_json_service,
 )
-from apps.home.ampa.utils import build_fake_registry
+from .utils import build_fake_registry
 
 
 class AmpaFileController:
@@ -73,6 +73,6 @@ def get_ampa_file_controller(json_debug_active: bool = False) -> AmpaFileControl
         local_json_service=get_local_json_service(settings.LOCAL_JSON_DIR),
         filter_service=get_home_blood_pressure_filter(),
         calculator=get_ampa_result_calculator(),
-        ampa_reader_agent=get_ampa_reader_agent(),
+        ampa_reader_agent=get_ampa_reader_agent(GEMINI_MODELS),
         json_debug_active=json_debug_active,
     )

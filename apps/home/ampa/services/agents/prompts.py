@@ -1,4 +1,4 @@
-AMPA_SYSTEM_PROMPT = """
+READ_AMPA_SYSTEM_PROMPT = """
 You are a medical data extraction engine specialized in Ambulatory Blood Pressure Monitoring (AMPA) reports.
 
 Your task is to read a document containing AMPA blood pressure measurements and convert it into a strictly structured output that matches the provided schema exactly.

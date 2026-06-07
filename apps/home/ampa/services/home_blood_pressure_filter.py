@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from apps.home.ampa.entities import (
+from ..entities import (
     BloodPressureReadingFiltered,
     DailyBloodPressureRecord,
     DailyBloodPressureRecordFiltered,

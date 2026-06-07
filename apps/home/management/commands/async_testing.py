@@ -15,13 +15,6 @@ class Command(BaseCommand):
 
     async def async_handle(self, *args, **options):
         file_path = Path(__file__).resolve().parent / "ampa.jpeg"
-        from django.conf import settings
-        from google import genai
-
-        client = genai.Client(api_key=settings.GOOGLE_API_KEY)
-
-        for m in client.models.list():
-            print(m.name)
 
         with open(file_path, "rb") as f:
             file = SimpleUploadedFile(

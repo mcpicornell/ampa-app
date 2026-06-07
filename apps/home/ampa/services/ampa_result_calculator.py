@@ -1,8 +1,8 @@
 from functools import lru_cache
 from typing import Literal
 
-from apps.home.ampa.constants import DIASTOLIC, EVENING, MORNING, SYSTOLIC
-from apps.home.ampa.entities import (
+from ..constants import DIASTOLIC, EVENING, MORNING, SYSTOLIC
+from ..entities import (
     AfternoonResult,
     AmpaResult,
     DailyResult,

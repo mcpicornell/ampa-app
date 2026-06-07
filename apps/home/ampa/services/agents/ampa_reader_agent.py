@@ -1,11 +1,11 @@
 from django.core.files.uploadedfile import UploadedFile
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from apps.home.ampa.entities import HomeBloodPressureRegistry
-from apps.home.ampa.llm import get_google_llm as get_llm
-from apps.home.ampa.llm_with_fallback import LLMWithFallback, get_llm_with_fallback
-from apps.home.ampa.services.prompts import AMPA_SYSTEM_PROMPT
-from apps.home.ampa.services.utils import encode_image
+from ...entities import HomeBloodPressureRegistry
+from ..llms import LLMWithFallback, get_llm_with_fallback
+from ..llms import get_google_llm as llm_factory
+from ..utils import encode_image
+from .prompts import READ_AMPA_SYSTEM_PROMPT
 
 
 class AmpaReaderAgent:
@@ -16,7 +16,7 @@ class AmpaReaderAgent:
         try:
             file.seek(0)
             image_base64 = encode_image(file)
-            messages = self._build_messages(AMPA_SYSTEM_PROMPT, image_base64)
+            messages = self._build_messages(READ_AMPA_SYSTEM_PROMPT, image_base64)
             result = self._llm.invoke_with_structured_output(
                 messages, HomeBloodPressureRegistry, "function_calling", True
             )
@@ -43,6 +43,6 @@ class AmpaReaderAgent:
         ]
 
 
-def get_ampa_reader_agent() -> AmpaReaderAgent:
-    llm = get_llm_with_fallback(get_llm)
+def get_ampa_reader_agent(models: list[str]) -> AmpaReaderAgent:
+    llm = get_llm_with_fallback(llm_factory, models)
     return AmpaReaderAgent(llm)
