@@ -32,9 +32,9 @@ class MeasurementPeriod(BaseModel):
 
     readings: List[BloodPressureReading] = Field(
         default_factory=list,
-        min_length=3,
+        min_length=0,
         max_length=3,
-        description="Tres mediciones consecutivas",
+        description="Hasta 3 mediciones consecutivas",
     )
 
 
@@ -69,7 +69,7 @@ class HomeBloodPressureRegistry(BaseModel):
 
     daily_records: List[DailyBloodPressureRecord] = Field(
         ...,
-        min_length=7,
+        min_length=1,
         max_length=7,
         description="Registros diarios de presión arterial durante 7 días",
     )
