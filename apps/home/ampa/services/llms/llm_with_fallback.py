@@ -1,13 +1,11 @@
 import datetime
 import logging
+from typing import Any, Callable
 
-from django.core.cache import cache
+from cachetools import TTLCache
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-
-FAILED_MODELS_KEY = "llm_failed_models"
-FAILED_MODELS_DATE_KEY = "llm_failed_models_date"
 
 
 class LLMWithFallback:
@@ -17,10 +15,20 @@ class LLMWithFallback:
         "429",
         "resource exhausted",
     ]
+    _cache = TTLCache(maxsize=100, ttl=86400)
+    FAILED_MODELS_KEY = "llm_failed_models"
+    FAILED_MODELS_DATE_KEY = "llm_failed_models_date"
 
-    def __init__(self, model_factory, models: list[str]):
+    def __init__(self, model_factory, models: list[str], api_key: str):
         self.model_factory = model_factory
         self.models = models
+        self.api_key = api_key
+
+    def invoke(self, messages, **kwargs) -> Any:
+        def execute(llm):
+            return llm.invoke(messages, **kwargs)
+
+        return self._execute_with_fallback(execute)
 
     def invoke_with_structured_output(
         self,
@@ -28,7 +36,19 @@ class LLMWithFallback:
         pydantic_model: BaseModel,
         method: str = "function_calling",
         strict: bool = True,
-    ):
+        **kwargs,
+    ) -> Any:
+        def execute(llm):
+            structured = llm.with_structured_output(
+                pydantic_model,
+                method=method,
+                strict=strict,
+            )
+            return structured.invoke(messages, **kwargs)
+
+        return self._execute_with_fallback(execute)
+
+    def _execute_with_fallback(self, execute: Callable[[Any], Any]) -> Any:
         last_error = None
         failed_models = self._get_failed_models()
 
@@ -37,26 +57,17 @@ class LLMWithFallback:
                 logger.debug(f"Skipping failed model: {model}")
                 continue
 
-            llm = self.model_factory(model)
+            llm = self.model_factory(model, self.api_key)
             logger.debug(f"Using model: {model}")
 
             try:
-                if model == "gemini-2.0-flash-lite":
-                    raise Exception("quota")
-                structured = llm.with_structured_output(
-                    pydantic_model,
-                    method=method,
-                    strict=strict,
-                )
-
-                return structured.invoke(messages)
+                return execute(llm)
 
             except Exception as e:
                 if self._is_retryable_error(e):
                     self._add_failed_model(model)
                     last_error = e
                     continue
-
                 raise
 
         raise Exception(f"All models failed. Last error: {last_error}")
@@ -68,14 +79,13 @@ class LLMWithFallback:
     def _get_failed_models(self):
         today = str(datetime.date.today())
 
-        cached_date = cache.get(FAILED_MODELS_DATE_KEY)
-
+        cached_date = self._cache.get(self.FAILED_MODELS_DATE_KEY)
         if cached_date != today:
-            cache.set(FAILED_MODELS_DATE_KEY, today, timeout=None)
-            cache.set(FAILED_MODELS_KEY, [], timeout=None)
+            self._cache[self.FAILED_MODELS_DATE_KEY] = today
+            self._cache[self.FAILED_MODELS_KEY] = []
             return set()
 
-        return set(cache.get(FAILED_MODELS_KEY, []) or [])
+        return set(self._cache.get(self.FAILED_MODELS_KEY, []) or [])
 
     def _add_failed_model(self, model: str):
         failed = list(self._get_failed_models())
@@ -83,8 +93,8 @@ class LLMWithFallback:
         if model not in failed:
             failed.append(model)
         logger.info(f"Adding failed model to cache: {model}")
-        cache.set(FAILED_MODELS_KEY, failed, timeout=None)
+        self._cache[self.FAILED_MODELS_KEY] = failed
 
 
-def get_llm_with_fallback(model_factory, models: list[str]):
-    return LLMWithFallback(model_factory, models)
+def get_llm_with_fallback(model_factory, models: list[str], api_key: str):
+    return LLMWithFallback(model_factory, models, api_key)

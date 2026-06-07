@@ -1,29 +1,29 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class DailyResult:
     morning: float
     afternoon: float
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BaseResult:
     systolic: float
     diastolic: float
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class MorningResult(BaseResult):
     pass
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class AfternoonResult(BaseResult):
     pass
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class AmpaResult:
     morning: MorningResult
     afternoon: AfternoonResult

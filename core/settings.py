@@ -11,7 +11,6 @@ from unipath import Path
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = Path(__file__).parent
 CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOCAL_JSON_DIR = os.path.join(CORE_DIR, "json_tests")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY", default="S#perS3crEt_1122")
@@ -128,4 +127,16 @@ GOOGLE_API_KEY = config("GOOGLE_API_KEY")
 LLM_RESPONSE_HARDCODED = config("LLM_RESPONSE_HARDCODED", default=False, cast=bool)
 
 # DEBUG
+LOCAL_JSON_DIR = os.path.join(CORE_DIR, "json_tests")
 JSON_DEBUG_ACTIVE = config("JSON_DEBUG_ACTIVE", default=False, cast=bool)
+
+# LLM Models
+GEMINI_MODELS = (
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-2.5-flash",
+)
+
+# SESSION
+SESSION_EXPIRANCY = 60 * 60 * 24  # 24 hours

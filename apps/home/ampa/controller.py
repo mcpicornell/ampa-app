@@ -1,10 +1,7 @@
 from dataclasses import asdict
 from functools import lru_cache
+from typing import BinaryIO
 
-from django.conf import settings
-from django.core.files.uploadedfile import UploadedFile
-
-from .constants import GEMINI_MODELS
 from .entities import AmpaResult, HomeBloodPressureRegistry
 from .services import (
     AmpaReaderAgent,
@@ -16,7 +13,6 @@ from .services import (
     get_home_blood_pressure_filter,
     get_local_json_service,
 )
-from .utils import build_fake_registry
 
 
 class AmpaFileController:
@@ -40,17 +36,15 @@ class AmpaFileController:
         registry_filtered = self._filter_service.filter(registry)
         self._write_json(
             f"ampa_registry_filtered_{datetime_str}.json",
-            registry_filtered.model_dump(),
+            asdict(registry_filtered),
         )
         result = self._calculator.calculate(registry_filtered)
         self._write_json(f"ampa_result_{datetime_str}.json", asdict(result))
         return result
 
     def upload_ampa_file(
-        self, file: UploadedFile, datetime_str: str
+        self, file: BinaryIO, datetime_str: str
     ) -> HomeBloodPressureRegistry:
-        if settings.LLM_RESPONSE_HARDCODED:
-            return build_fake_registry()
 
         registry = self._ampa_reader_agent.read_ampa(file)
 
@@ -64,11 +58,17 @@ class AmpaFileController:
 
 
 @lru_cache
-def get_ampa_file_controller(json_debug_active: bool = False) -> AmpaFileController:
+def get_ampa_file_controller(
+    models: tuple[str, ...],
+    llm_api_key: str,
+    json_dir: str,
+    json_debug_active: bool = False,
+) -> AmpaFileController:
+
     return AmpaFileController(
-        local_json_service=get_local_json_service(settings.LOCAL_JSON_DIR),
+        local_json_service=get_local_json_service(json_dir),
         filter_service=get_home_blood_pressure_filter(),
         calculator=get_ampa_result_calculator(),
-        ampa_reader_agent=get_ampa_reader_agent(GEMINI_MODELS),
+        ampa_reader_agent=get_ampa_reader_agent(models, llm_api_key),
         json_debug_active=json_debug_active,
     )

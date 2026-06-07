@@ -1,4 +1,5 @@
-from django.core.files.uploadedfile import UploadedFile
+from typing import BinaryIO
+
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from ...entities import HomeBloodPressureRegistry
@@ -12,7 +13,7 @@ class AmpaReaderAgent:
     def __init__(self, llm: LLMWithFallback):
         self._llm = llm
 
-    def read_ampa(self, file: UploadedFile) -> HomeBloodPressureRegistry:
+    def read_ampa(self, file: BinaryIO) -> HomeBloodPressureRegistry:
         try:
             file.seek(0)
             image_base64 = encode_image(file)
@@ -43,6 +44,6 @@ class AmpaReaderAgent:
         ]
 
 
-def get_ampa_reader_agent(models: list[str]) -> AmpaReaderAgent:
-    llm = get_llm_with_fallback(llm_factory, models)
+def get_ampa_reader_agent(models: list[str], api_key: str) -> AmpaReaderAgent:
+    llm = get_llm_with_fallback(llm_factory, models, api_key)
     return AmpaReaderAgent(llm)

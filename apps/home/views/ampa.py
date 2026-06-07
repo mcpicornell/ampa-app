@@ -14,12 +14,18 @@ from apps.home.ampa.entities import HomeBloodPressureRegistry
 
 logger = logging.getLogger(__name__)
 
-ONE_DAY = 60 * 60 * 24
 
-
-class RegistrySession(BaseModel):
+class _RegistrySession(BaseModel):
     datetime: str
     registry: HomeBloodPressureRegistry
+
+
+controller = get_ampa_file_controller(
+    models=settings.GEMINI_MODELS,
+    llm_api_key=settings.GOOGLE_API_KEY,
+    json_dir=settings.LOCAL_JSON_DIR,
+    json_debug_active=settings.JSON_DEBUG_ACTIVE,
+)
 
 
 @login_required(login_url="/login/")
@@ -27,7 +33,6 @@ def ampa_upload(request):
     if request.method == "POST" and request.FILES.get("ampa_file"):
         try:
             file = request.FILES["ampa_file"]
-            controller = get_ampa_file_controller(settings.JSON_DEBUG_ACTIVE)
             datetime_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             registry: HomeBloodPressureRegistry = controller.upload_ampa_file(
                 file, datetime_str
@@ -35,12 +40,12 @@ def ampa_upload(request):
 
             result_id = str(uuid.uuid4())
             request.session.setdefault("ampa_registries", {})
-            request.session["ampa_registries"][result_id] = RegistrySession(
+            request.session["ampa_registries"][result_id] = _RegistrySession(
                 datetime=datetime_str,
                 registry=registry,
             ).model_dump()
             request.session.modified = True
-            request.session.set_expiry(ONE_DAY)
+            request.session.set_expiry(settings.SESSION_EXPIRANCY)
             return redirect("ampa_result", result_id=result_id)
 
         except Exception as e:
@@ -64,8 +69,7 @@ def ampa_result(request, result_id):
         messages.error(request, f"Registry '{result_id}' not found")
         return render(request, "home/ampa-file-upload.html")
 
-    controller = get_ampa_file_controller(settings.JSON_DEBUG_ACTIVE)
-    session = RegistrySession(**session_dict)
+    session = _RegistrySession(**session_dict)
     result = controller.calculate_ampa_result(session.registry, session.datetime)
 
     return render(

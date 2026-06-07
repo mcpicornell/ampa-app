@@ -1,25 +1,29 @@
+from dataclasses import dataclass
 from typing import List, Optional
 
-from pydantic import BaseModel
 
-
-class BloodPressureReadingFiltered(BaseModel):
+@dataclass(frozen=True, slots=True)
+class BloodPressureReadingFiltered:
     systolic: Optional[int] = None
     diastolic: Optional[int] = None
 
 
-class MeasurementPeriodFiltered(BaseModel):
-    time: Optional[str] = None
+@dataclass(frozen=True, slots=True)
+class MeasurementPeriodFiltered:
     readings: List[BloodPressureReadingFiltered]
+    time: Optional[str] = None
 
 
-class DailyBloodPressureRecordFiltered(BaseModel):
+@dataclass(frozen=True, slots=True)
+class DailyBloodPressureRecordFiltered:
     day: int
     morning: MeasurementPeriodFiltered
     evening: MeasurementPeriodFiltered
 
 
-class FilteredHomeBloodPressureRegistry(BaseModel):
+@dataclass(frozen=True, slots=True)
+class FilteredHomeBloodPressureRegistry:
+    daily_records: List[DailyBloodPressureRecordFiltered]
     code: Optional[str] = None
     patient_name: Optional[str] = None
     date: Optional[str] = None
@@ -27,4 +31,3 @@ class FilteredHomeBloodPressureRegistry(BaseModel):
     phone_number: Optional[str] = None
     physician_name: Optional[str] = None
     pharmacist_name: Optional[str] = None
-    daily_records: List[DailyBloodPressureRecordFiltered]
