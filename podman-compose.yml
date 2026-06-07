@@ -11,11 +11,12 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     build: .
     volumes:
-      - ./:/app
+      - ./:/app:z
     networks:
       - db_network
       - web_network
       - django_network
+    userns_mode: keep-id
 networks:
   db_network:
   web_network:

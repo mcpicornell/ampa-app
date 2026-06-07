@@ -21,6 +21,7 @@ DEBUG = config("DEBUG", default=True, cast=bool)
 
 # load production server from .env
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", config("SERVER", default="127.0.0.1")]
+CSRF_TRUSTED_ORIGINS = [config("CSRF_TRUSTED_ORIGINS", default="http://localhost:8008")]
 
 # Application definition
 

@@ -1,4 +1,5 @@
 import datetime
+import logging
 import uuid
 
 from django.conf import settings
@@ -10,6 +11,8 @@ from pydantic import BaseModel
 from apps.home.ampa.constants import AI_FREE_QUOTA_EXCEEDED_MESSAGE
 from apps.home.ampa.controller import get_ampa_file_controller
 from apps.home.ampa.entities import HomeBloodPressureRegistry
+
+logger = logging.getLogger(__name__)
 
 ONE_DAY = 60 * 60 * 24
 
@@ -42,6 +45,7 @@ def ampa_upload(request):
 
         except Exception as e:
             error_message = str(e)
+            logger.error(f"Error uploading AMPA file: {error_message}")
             if AI_FREE_QUOTA_EXCEEDED_MESSAGE in error_message:
                 error_message = "AI free quota exceeded, try it again tomorrow"
             messages.error(request, error_message)

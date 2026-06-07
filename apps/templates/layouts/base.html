@@ -68,7 +68,7 @@
         Swal.fire({
           icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}warning{% endif %}",
           title: "{{ message.tags|capfirst }}",
-          text: "{{ message }}",
+          text: "{{ message|escapejs }}",
           confirmButtonText: "OK"
         });
 

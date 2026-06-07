@@ -38,14 +38,12 @@ class AmpaFileController:
         self, registry: HomeBloodPressureRegistry, datetime_str: str
     ) -> AmpaResult:
         registry_filtered = self._filter_service.filter(registry)
-        self._local_json_service.write_json(
+        self._write_json(
             f"ampa_registry_filtered_{datetime_str}.json",
             registry_filtered.model_dump(),
         )
         result = self._calculator.calculate(registry_filtered)
-        self._local_json_service.write_json(
-            f"ampa_result_{datetime_str}.json", asdict(result)
-        )
+        self._write_json(f"ampa_result_{datetime_str}.json", asdict(result))
         return result
 
     def upload_ampa_file(
@@ -56,9 +54,7 @@ class AmpaFileController:
 
         registry = self._ampa_reader_agent.read_ampa(file)
 
-        self._local_json_service.write_json(
-            f"ampa_registry_{datetime_str}.json", registry.model_dump()
-        )
+        self._write_json(f"ampa_registry_{datetime_str}.json", registry.model_dump())
 
         return registry
 
