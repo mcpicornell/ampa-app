@@ -132,7 +132,7 @@ cp .example.env .env
 python manage.py makemigrations
 python manage.py migrate
 
-# Create superuser (optional)
+# Create superuser
 python manage.py createsuperuser
 
 # Run development server
@@ -218,24 +218,6 @@ JSON_DEBUG_ACTIVE=False
 docker-compose up --build
 
 # The application will be available at http://localhost:8008
-```
-
-### Podman
-
-```bash
-# Build and run with Podman
-podman-compose up --build
-
-# The application will be available at http://localhost:8008
-```
-
-### Heroku
-
-The project includes a `Procfile` for Heroku deployment:
-
-```bash
-# Deploy to Heroku
-git push heroku main
 ```
 
 ## Configuration
