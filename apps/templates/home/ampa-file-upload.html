@@ -46,7 +46,7 @@
           </label>
 
           <div class="d-flex justify-content-center">
-            <button id="submit-btn" type="submit" class="btn btn-success mt-4">
+            <button id="submit-btn" type="submit" class="btn btn-success mt-4" disabled>
               Upload File
             </button>
           </div>
@@ -62,14 +62,16 @@
 
 {% endblock content %}
 
-<!-- Specific JS goes HERE -->
 {% block javascripts %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const input = document.getElementById('ampa-file');
     const label = document.getElementById('file-name');
     const title = document.getElementById('file-title');
+    const formBtn = document.getElementById('submit-btn');
+    const form = document.getElementById('ampa-form');
 
+    // Initialize file input and update UI when file is selected
     input.addEventListener('change', function () {
       label.textContent = this.files.length > 0
         ? this.files[0].name
@@ -79,10 +81,17 @@
         ? 'AMPA file selected'
         : 'Select AMPA file';
     });
-  });
-  document.getElementById("ampa-form").addEventListener("submit", function () {
-      document.getElementById("submit-btn").disabled = true;
-      document.getElementById("submit-btn").innerText = "Processing file...";
+
+    // Disable button when no file is selected
+    form.addEventListener("change", function () {
+      formBtn.disabled = input.files.length === 0;
+    });
+
+    // Disable button and change text when form is submitted
+    form.addEventListener("submit", function () {
+      formBtn.disabled = true;
+      formBtn.innerText = "Processing file...";
+    });
   });
 </script>
 {% endblock javascripts %}
