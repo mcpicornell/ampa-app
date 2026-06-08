@@ -1,6 +1,7 @@
 import datetime
 import logging
 from typing import Any, Callable
+from zoneinfo import ZoneInfo
 
 from cachetools import TTLCache
 from pydantic import BaseModel
@@ -23,6 +24,7 @@ class LLMWithFallback:
         self.model_factory = model_factory
         self.models = models
         self.api_key = api_key
+        self.tz = ZoneInfo("US/Pacific")  # US/Pacific time is when Gemini reset quotas
 
     def invoke(self, messages, **kwargs) -> Any:
         def execute(llm):
@@ -76,9 +78,16 @@ class LLMWithFallback:
         msg = str(error).lower()
         return any(k in msg for k in self.QUOTA_KEYWORDS)
 
-    def _get_failed_models(self):
-        today = str(datetime.date.today())
+    def _add_failed_model(self, model: str) -> None:
+        failed = list(self._get_failed_models())
 
+        if model not in failed:
+            failed.append(model)
+        logger.info(f"Adding failed model to cache: {model}")
+        self._cache[self.FAILED_MODELS_KEY] = failed
+
+    def _get_failed_models(self) -> set[str]:
+        today: str = self._get_today(self.tz)
         cached_date = self._cache.get(self.FAILED_MODELS_DATE_KEY)
         if cached_date != today:
             self._cache[self.FAILED_MODELS_DATE_KEY] = today
@@ -87,13 +96,8 @@ class LLMWithFallback:
 
         return set(self._cache.get(self.FAILED_MODELS_KEY, []) or [])
 
-    def _add_failed_model(self, model: str):
-        failed = list(self._get_failed_models())
-
-        if model not in failed:
-            failed.append(model)
-        logger.info(f"Adding failed model to cache: {model}")
-        self._cache[self.FAILED_MODELS_KEY] = failed
+    def _get_today(self, tz: ZoneInfo = ZoneInfo("US/Pacific")) -> str:
+        return str(datetime.datetime.now(tz).date())
 
 
 def get_llm_with_fallback(model_factory, models: list[str], api_key: str):
