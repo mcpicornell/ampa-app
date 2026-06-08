@@ -1,48 +1,75 @@
 # AMPA - Home Blood Pressure Monitoring
 
-Django system for processing and analyzing home blood pressure monitoring records (AMPA).
+Django system for processing and analyzing home blood pressure monitoring records (AMPA) with AI-powered data extraction.
 
 ## Description
 
-This application processes home blood pressure self-monitoring records performed by patients at home over a 7-day period. The system filters data according to established clinical protocols and calculates systolic and diastolic blood pressure averages for morning and evening periods.
+This application processes home blood pressure self-monitoring records performed by patients at home over a 7-day period. The system uses Google Gemini AI to extract structured data from uploaded images, filters data according to established clinical protocols, and calculates systolic and diastolic blood pressure averages for morning and evening periods.
 
 ## Features
 
+- **AI-powered data extraction**: Uses Google Gemini models to extract blood pressure data from uploaded images
 - **Data registration**: Captures patient information (name, address, phone) and healthcare professionals (physician, pharmacist)
 - **Structured measurements**: 7 days of records with 3 consecutive measurements per period (morning and evening)
 - **Clinical filtering**: Applies standard filtering protocols:
   - Removes the first registration day (adaptation day)
   - Removes the first reading of each morning period
 - **Average calculation**: Calculates systolic and diastolic blood pressure averages by period
-- **Data validation**: Physiological range validation for blood pressure and pulse
+- **Data validation**: Physiological range validation for blood pressure and pulse using Pydantic
+- **User authentication**: Built-in authentication system for secure access
+- **Session management**: 24-hour session expiry for uploaded registries
 
 ## Project Structure
 
 ```
-apps/home/ampa/
-├── controller.py                      # Main application controller
-├── entities/                          # Data models
-│   ├── ampa_result.py                # AMPA calculation results
-│   ├── home_blood_pressure_registry.py  # Blood pressure registry
-│   └── home_blood_pressure_filtered.py   # Filtered registry
-└── services/                          # Business logic
-    ├── calculator.py                 # Average calculation
-    ├── filter.py                     # Data filtering
-    └── upload.py                     # File upload
+ampa-app/
+├── apps/
+│   ├── authentication/               # User authentication system
+│   ├── home/                        # Main application
+│   │   ├── ampa/                    # AMPA core logic
+│   │   │   ├── controller.py        # Main application controller
+│   │   │   ├── entities/           # Pydantic data models
+│   │   │   │   ├── ampa_result.py
+│   │   │   │   ├── home_blood_pressure_registry.py
+│   │   │   │   └── home_blood_pressure_filtered.py
+│   │   │   └── services/           # Business logic
+│   │   │       ├── agents/        # AI agents for data extraction
+│   │   │       │   ├── ampa_reader_agent.py
+│   │   │       │   └── prompts.py
+│   │   │       ├── llms/          # LLM integration
+│   │   │       │   ├── llm_factory.py
+│   │   │       │   └── llm_with_fallback.py
+│   │   │       ├── ampa_result_calculator.py
+│   │   │       └── home_blood_pressure_filter.py
+│   │   ├── views/                  # Django views
+│   │   └── urls.py                 # URL routing
+│   ├── static/                     # Static assets
+│   └── templates/                  # HTML templates
+├── core/                           # Django configuration
+│   ├── settings.py                 # Django settings
+│   ├── urls.py                    # Main URL configuration
+│   ├── asgi.py                    # ASGI configuration
+│   └── wsgi.py                    # WSGI configuration
+├── docker-compose.yml              # Docker configuration
+├── podman-compose.yml             # Podman configuration
+├── Dockerfile                     # Container image
+├── requirements.txt               # Python dependencies
+├── manage.py                      # Django management script
+└── .env                           # Environment variables
 ```
 
 ## Data Models
 
 ### BloodPressureReading
-Individual blood pressure reading:
-- `systolic`: Systolic pressure (50-300 mmHg)
-- `diastolic`: Diastolic pressure (30-200 mmHg)
-- `pulse`: Heart rate (20-250 bpm)
+Individual blood pressure reading (Pydantic model):
+- `systolic`: Systolic pressure (30-250 mmHg)
+- `diastolic`: Diastolic pressure (30-250 mmHg)
+- `pulse`: Heart rate (10-250 bpm)
 
 ### MeasurementPeriod
-Measurement period with 3 consecutive readings:
+Measurement period with up to 3 consecutive readings:
 - `time`: Measurement time
-- `readings`: List of 3 readings
+- `readings`: List of up to 3 readings
 
 ### DailyBloodPressureRecord
 Daily record:
@@ -52,27 +79,41 @@ Daily record:
 
 ### HomeBloodPressureRegistry
 Complete patient registry:
-- Patient demographic information
-- Healthcare professional information
-- 7 days of daily records
+- `code`: Form code
+- `patient_name`: Patient name
+- `date`: Registration date
+- `address`: Patient address
+- `phone_number`: Patient phone
+- `physician_name`: Physician name
+- `pharmacist_name`: Pharmacist name
+- `daily_records`: 7 days of daily records
 
 ### AmpaResult
-Processing result:
-- `systolic`: Systolic averages (morning/evening)
-- `diastolic`: Diastolic averages (morning/evening)
+Processing result (dataclass):
+- `morning`: MorningResult with systolic and diastolic averages
+- `afternoon`: AfternoonResult with systolic and diastolic averages
 
 ## Processing Flow
 
-1. **Data reception**: Controller receives a `HomeBloodPressureRegistry`
-2. **Filtering**: `HomeBloodPressureFilter` is applied:
+1. **File upload**: User uploads an image of the AMPA form
+2. **AI extraction**: `AmpaReaderAgent` uses Google Gemini AI to extract structured data from the image
+3. **Data validation**: Extracted data is validated using Pydantic models
+4. **Filtering**: `HomeBloodPressureFilter` is applied:
    - Day 1 is removed (adaptation period)
    - First reading of each morning is removed
-3. **Calculation**: `AmpaResultCalculator` is applied:
+5. **Calculation**: `AmpaResultCalculator` is applied:
    - Systolic and diastolic averages are calculated
    - Results are separated by period (morning/evening)
-4. **Result**: An `AmpaResult` with calculated averages is returned
+6. **Result**: An `AmpaResult` with calculated averages is returned and displayed
 
 ## Installation
+
+### Prerequisites
+- Python 3.13+ (local development)
+- Python 3.9 (production deployment)
+- Google API Key for Gemini AI models
+
+### Local Development
 
 ```bash
 # Create virtual environment
@@ -83,34 +124,127 @@ source .venv/bin/activate  # Linux/Mac
 # Install dependencies
 pip install -r requirements.txt
 
+# Configure environment variables
+cp .example.env .env
+# Edit .env and add your GOOGLE_API_KEY
+
 # Run migrations
 python manage.py makemigrations
 python manage.py migrate
 
-# Run server
+# Create superuser (optional)
+python manage.py createsuperuser
+
+# Run development server
 python manage.py runserver
 ```
 
+The application will be available at `http://localhost:8000`
+
 ## Usage
+
+### Web Interface
+
+1. Navigate to `http://localhost:8000`
+2. Login or register an account
+3. Upload an image of the AMPA blood pressure monitoring form
+4. View the calculated results with morning and evening averages
 
 ### Controller usage example:
 
 ```python
 from apps.home.ampa.controller import get_ampa_file_controller
 
-controller = get_ampa_file_controller()
+controller = get_ampa_file_controller(
+    models=("gemini-2.5-flash",),
+    llm_api_key="your-google-api-key",
+    json_dir="json_tests",
+    json_debug_active=False,
+)
 
-# Calculate AMPA result from data
-result = controller.calculate_ampa_result(data_dict)
-print(f"Morning systolic: {result.systolic.morning}")
-print(f"Evening diastolic: {result.diastolic.afternoon}")
+# Upload and process AMPA file
+registry = controller.upload_ampa_file(file, datetime_str)
+
+# Calculate AMPA result
+result = controller.calculate_ampa_result(registry, datetime_str)
+print(f"Morning systolic: {result.morning.systolic}")
+print(f"Morning diastolic: {result.morning.diastolic}")
+print(f"Afternoon systolic: {result.afternoon.systolic}")
+print(f"Afternoon diastolic: {result.afternoon.diastolic}")
 ```
 
 ## Technologies
 
-- **Django 3.2.6 LTS**: Web framework
-- **Pydantic**: Data validation and models
-- **SQLite**: Database (configurable)
+- **Django 5.2.1**: Web framework
+- **Python 3.13+**: Development environment
+- **Pydantic 2.13.4**: Data validation and models
+- **Google Gemini AI**: AI-powered data extraction
+- **LangChain**: LLM integration framework
+  - langchain-google-genai 4.2.3
+  - langchain-core 1.4.0
+- **SQLite**: Database (configurable via dj-database-url)
+- **Gunicorn 23.0.0**: WSGI HTTP server
+- **Uvicorn 0.34.0**: ASGI server
+- **WhiteNoise 6.9.0**: Static file serving
+- **python-decouple 3.8**: Configuration management
+
+## Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+```bash
+SECRET_KEY=your-secret-key
+DEBUG=True
+SERVER=127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:8000
+GOOGLE_API_KEY=your-google-api-key
+LLM_MODEL=gemini-2.5-flash
+LLM_RESPONSE_HARDCODED=False
+JSON_DEBUG_ACTIVE=False
+```
+
+### Available Gemini Models
+- gemini-3.1-flash-lite
+- gemini-2.5-flash-lite
+- gemini-3.5-flash
+- gemini-2.5-flash
+
+## Deployment
+
+### Docker
+
+```bash
+# Build and run with Docker
+docker-compose up --build
+
+# The application will be available at http://localhost:8008
+```
+
+### Podman
+
+```bash
+# Build and run with Podman
+podman-compose up --build
+
+# The application will be available at http://localhost:8008
+```
+
+### Heroku
+
+The project includes a `Procfile` for Heroku deployment:
+
+```bash
+# Deploy to Heroku
+git push heroku main
+```
+
+## Configuration
+
+### Debug Mode
+Set `JSON_DEBUG_ACTIVE=True` in `.env` to save JSON files of processed data to the `json_tests/` directory for debugging purposes.
+
+### Session Management
+Sessions expire after 24 hours (configurable via `SESSION_EXPIRANCY` in settings).
 
 ## License
 
