@@ -6,16 +6,13 @@ from .entities import AmpaResult, HomeBloodPressureRegistry
 from .services import (
     AmpaReaderAgent,
     AmpaResultCalculator,
-    GeminiPolicy,
     HomeBloodPressureFilter,
+    LLMPolicy,
     LocalJsonService,
+    get_ampa_reader_agent,
     get_ampa_result_calculator,
     get_home_blood_pressure_filter,
-    get_llm_router,
     get_local_json_service,
-)
-from .services import (
-    get_ampa_reader_agent_litellm as get_ampa_reader_agent,
 )
 
 
@@ -66,6 +63,7 @@ def get_ampa_file_controller(
     models: tuple[str, ...],
     llm_api_key: str,
     json_dir: str,
+    llm_policy: LLMPolicy,
     json_debug_active: bool = False,
 ) -> AmpaFileController:
 
@@ -76,8 +74,7 @@ def get_ampa_file_controller(
         ampa_reader_agent=get_ampa_reader_agent(
             models=models,
             api_key=llm_api_key,
-            router=get_llm_router(),
-            policy=GeminiPolicy(models),
+            llm_policy=llm_policy,
         ),
         json_debug_active=json_debug_active,
     )

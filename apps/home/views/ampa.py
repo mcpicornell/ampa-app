@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from apps.home.ampa.constants import AI_FREE_QUOTA_EXCEEDED_MESSAGE
 from apps.home.ampa.controller import get_ampa_file_controller
 from apps.home.ampa.entities import HomeBloodPressureRegistry
+from apps.home.ampa.services import GeminiPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ controller = get_ampa_file_controller(
     llm_api_key=settings.GEMINI_API_KEY,
     json_dir=settings.LOCAL_JSON_DIR,
     json_debug_active=settings.JSON_DEBUG_ACTIVE,
+    llm_policy=GeminiPolicy(),
 )
 
 

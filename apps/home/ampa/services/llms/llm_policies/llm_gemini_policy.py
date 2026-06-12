@@ -7,9 +7,9 @@ from .llm_policy_types import LLMPolicy
 
 
 class GeminiPolicy(LLMPolicy):
-    def __init__(self, models: list[str]):
-        self._models = models
+    def __init__(self):
         self._blocked_until: dict[str, float] = {}
+        self._today = datetime.now(ZoneInfo("America/Los_Angeles")).date()
 
     def is_blocked(self, model: str) -> bool:
         until = self._blocked_until.get(model)
@@ -18,7 +18,8 @@ class GeminiPolicy(LLMPolicy):
     def mark_failed(self, model: str):
         self._blocked_until[model] = self._next_reset_timestamp()
 
-    def available_models(self, models: list[str]) -> list[str]:
+    def get_available_models(self, models: list[str]) -> list[str]:
+        self._cleanup_if_new_day()
         return [m for m in models if not self.is_blocked(m)]
 
     def _next_reset_timestamp(self) -> float:
@@ -32,7 +33,17 @@ class GeminiPolicy(LLMPolicy):
 
         return reset.timestamp()
 
+    def _cleanup_if_new_day(self):
+        today = self._current_day()
+
+        if today != self._today:
+            self._blocked_until.clear()
+            self._today = today
+
+    def _current_day(self) -> str:
+        return str(datetime.now(ZoneInfo("America/Los_Angeles")).date())
+
 
 @lru_cache
-def get_gemini_policy(models: list[str]) -> GeminiPolicy:
-    return GeminiPolicy(models)
+def get_gemini_policy(models: tuple[str, ...]) -> GeminiPolicy:
+    return GeminiPolicy(list(models))

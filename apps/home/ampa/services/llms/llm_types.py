@@ -1,9 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import Protocol
 
-if TYPE_CHECKING:
-    from ..llms import LLMLiteService, LLMWithFallback
+from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    type LLMInvoker = LLMWithFallback | LLMLiteService
-else:
-    type LLMInvoker = object
+
+class LLMInvoker(Protocol):
+    def invoke_structured(
+        self, messages: list, schema: BaseModel, **kwargs
+    ) -> object: ...
+    def invoke(self, messages: list, **kwargs) -> str: ...
