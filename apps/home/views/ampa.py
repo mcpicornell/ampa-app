@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import login_required
+from django.core.cache import cache
 from django.shortcuts import redirect, render
 from pydantic import BaseModel
 
@@ -37,25 +38,30 @@ def ampa_upload(request):
         try:
             file = request.FILES["ampa_file"]
             datetime_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             registry: HomeBloodPressureRegistry = controller.upload_ampa_file(
                 file, datetime_str
             )
 
             result_id = str(uuid.uuid4())
-            request.session.setdefault("ampa_registries", {})
-            request.session["ampa_registries"][result_id] = _RegistrySession(
-                datetime=datetime_str,
-                registry=registry,
-            ).model_dump()
-            request.session.modified = True
-            request.session.set_expiry(settings.SESSION_EXPIRANCY)
+
+            cache.set(
+                f"ampa:{result_id}",
+                {
+                    "datetime": datetime_str,
+                    "registry": registry.model_dump(),
+                },
+                timeout=settings.CACHE_EXPIRATION,
+            )
             return redirect("ampa_result", result_id=result_id)
 
         except Exception as e:
             error_message = str(e)
             logger.error(f"Error uploading AMPA file: {error_message}")
+
             if AI_FREE_QUOTA_EXCEEDED_MESSAGE in error_message:
                 error_message = "AI free quota exceeded, try it again tomorrow"
+
             messages.error(request, error_message)
             return render(request, "home/ampa-file-upload.html")
 
@@ -64,15 +70,14 @@ def ampa_upload(request):
 
 @login_required(login_url="/login/")
 def ampa_result(request, result_id):
-
-    registries = request.session.get("ampa_registries", {})
-    session_dict = registries.get(result_id)
+    session_dict = cache.get(f"ampa:{result_id}")
 
     if not session_dict:
-        messages.error(request, f"Registry '{result_id}' not found")
+        messages.error(request, f"Registry '{result_id}' not found or expired")
         return render(request, "home/ampa-file-upload.html")
 
     session = _RegistrySession(**session_dict)
+
     result = controller.calculate_ampa_result(session.registry, session.datetime)
 
     return render(

@@ -120,6 +120,13 @@ STATIC_URL = "/static/"
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (os.path.join(CORE_DIR, "apps/static"),)
 
+# CACHE
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
+CACHE_EXPIRATION = 60 * 30  # 30 min
 
 # LLM
 GOOGLE_LLM_MODEL = config("LLM_MODEL", default="gemini-2.5-flash")
