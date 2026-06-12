@@ -120,10 +120,17 @@ STATIC_URL = "/static/"
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (os.path.join(CORE_DIR, "apps/static"),)
 
+# CACHE
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
+CACHE_EXPIRATION = 60 * 30  # 30 min
 
 # LLM
 GOOGLE_LLM_MODEL = config("LLM_MODEL", default="gemini-2.5-flash")
-GOOGLE_API_KEY = config("GOOGLE_API_KEY")
+GEMINI_API_KEY = config("GEMINI_API_KEY")
 LLM_RESPONSE_HARDCODED = config("LLM_RESPONSE_HARDCODED", default=False, cast=bool)
 
 # DEBUG
@@ -131,11 +138,15 @@ LOCAL_JSON_DIR = os.path.join(CORE_DIR, "json_tests")
 JSON_DEBUG_ACTIVE = config("JSON_DEBUG_ACTIVE", default=False, cast=bool)
 
 # LLM Models
+GEMINI_3_1_FLASH_LITE = "gemini-3.1-flash-lite"
+GEMINI_2_5_FLASH_LITE = "gemini-2.5-flash-lite"
+GEMINI_3_5_FLASH = "gemini-3.5-flash"
+GEMINI_2_5_FLASH = "gemini-2.5-flash"
 GEMINI_MODELS = (
-    "gemini-3.1-flash-lite",
-    "gemini-2.5-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-2.5-flash",
+    GEMINI_3_1_FLASH_LITE,
+    GEMINI_2_5_FLASH_LITE,
+    GEMINI_3_5_FLASH,
+    GEMINI_2_5_FLASH,
 )
 
 # SESSION

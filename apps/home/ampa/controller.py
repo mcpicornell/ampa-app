@@ -7,6 +7,7 @@ from .services import (
     AmpaReaderAgent,
     AmpaResultCalculator,
     HomeBloodPressureFilter,
+    LLMPolicy,
     LocalJsonService,
     get_ampa_reader_agent,
     get_ampa_result_calculator,
@@ -62,6 +63,7 @@ def get_ampa_file_controller(
     models: tuple[str, ...],
     llm_api_key: str,
     json_dir: str,
+    llm_policy: LLMPolicy,
     json_debug_active: bool = False,
 ) -> AmpaFileController:
 
@@ -69,6 +71,10 @@ def get_ampa_file_controller(
         local_json_service=get_local_json_service(json_dir),
         filter_service=get_home_blood_pressure_filter(),
         calculator=get_ampa_result_calculator(),
-        ampa_reader_agent=get_ampa_reader_agent(models, llm_api_key),
+        ampa_reader_agent=get_ampa_reader_agent(
+            models=models,
+            api_key=llm_api_key,
+            llm_policy=llm_policy,
+        ),
         json_debug_active=json_debug_active,
     )
