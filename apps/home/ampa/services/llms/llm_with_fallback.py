@@ -1,5 +1,6 @@
 import logging
 from typing import Any, Callable
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
 
