@@ -28,7 +28,7 @@ class LLMWithFallback(LLMInvoker):
         self.models = models
         self.api_key = api_key
         self.policy = policy
-        self.tz = ZoneInfo("US/Pacific")
+        self.tz = policy.timezone
 
     def invoke(self, messages, **kwargs) -> Any:
         return self._execute_with_fallback(lambda llm: llm.invoke(messages, **kwargs))

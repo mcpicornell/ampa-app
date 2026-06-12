@@ -11,6 +11,7 @@ from .llms import (
     GeminiPolicy,
     LLMPolicy,
     LLMWithFallback,
+    get_gemini_policy,
 )
 from .local_json import LocalJsonService, get_local_json_service
 
@@ -26,4 +27,5 @@ __all__ = [
     "LLMWithFallback",
     "LLMPolicy",
     "GeminiPolicy",
+    "get_gemini_policy",
 ]

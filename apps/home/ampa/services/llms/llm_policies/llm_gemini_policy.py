@@ -7,9 +7,10 @@ from .llm_policy_types import LLMPolicy
 
 
 class GeminiPolicy(LLMPolicy):
-    def __init__(self):
+    def __init__(self, timezone: ZoneInfo):
+        self.timezone = timezone
         self._blocked_until: dict[str, float] = {}
-        self._today = datetime.now(ZoneInfo("America/Los_Angeles")).date()
+        self._today = datetime.now(timezone).date()
 
     def is_blocked(self, model: str) -> bool:
         until = self._blocked_until.get(model)
@@ -23,8 +24,7 @@ class GeminiPolicy(LLMPolicy):
         return [m for m in models if not self.is_blocked(m)]
 
     def _next_reset_timestamp(self) -> float:
-        tz = ZoneInfo("America/Los_Angeles")
-        now = datetime.now(tz)
+        now = datetime.now(self.timezone)
 
         reset = now.replace(hour=9, minute=0, second=0, microsecond=0)
 
@@ -45,5 +45,5 @@ class GeminiPolicy(LLMPolicy):
 
 
 @lru_cache
-def get_gemini_policy(models: tuple[str, ...]) -> GeminiPolicy:
-    return GeminiPolicy(list(models))
+def get_gemini_policy(timezone: ZoneInfo) -> GeminiPolicy:
+    return GeminiPolicy(timezone)
