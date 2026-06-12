@@ -32,7 +32,7 @@ class LLMWithFallback:
 
         return self._execute_with_fallback(execute)
 
-    def invoke_with_structured_output(
+    def invoke_structured(
         self,
         messages,
         pydantic_model: BaseModel,

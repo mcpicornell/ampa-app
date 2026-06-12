@@ -126,7 +126,7 @@ pip install -r requirements.txt
 
 # Configure environment variables
 cp .example.env .env
-# Edit .env and add your GOOGLE_API_KEY
+# Edit .env and add your GEMINI_API_KEY
 
 # Run migrations
 python manage.py makemigrations
@@ -197,7 +197,7 @@ SECRET_KEY=your-secret-key
 DEBUG=True
 SERVER=127.0.0.1
 CSRF_TRUSTED_ORIGINS=http://localhost:8000
-GOOGLE_API_KEY=your-google-api-key
+GEMINI_API_KEY=your-google-api-key
 LLM_MODEL=gemini-2.5-flash
 LLM_RESPONSE_HARDCODED=False
 JSON_DEBUG_ACTIVE=False

@@ -1,0 +1,9 @@
+from typing import Protocol
+
+
+class LLMPolicy(Protocol):
+    def is_blocked(self, model: str) -> bool: ...
+
+    def mark_failed(self, model: str): ...
+
+    def available_models(self, models: list[str]) -> list[str]: ...

@@ -22,7 +22,7 @@ class _RegistrySession(BaseModel):
 
 controller = get_ampa_file_controller(
     models=settings.GEMINI_MODELS,
-    llm_api_key=settings.GOOGLE_API_KEY,
+    llm_api_key=settings.GEMINI_API_KEY,
     json_dir=settings.LOCAL_JSON_DIR,
     json_debug_active=settings.JSON_DEBUG_ACTIVE,
 )
