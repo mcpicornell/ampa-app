@@ -1,6 +1,7 @@
 import datetime
 import logging
 import uuid
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib import messages
@@ -11,6 +12,7 @@ from pydantic import BaseModel
 from apps.home.ampa.constants import AI_FREE_QUOTA_EXCEEDED_MESSAGE
 from apps.home.ampa.controller import get_ampa_file_controller
 from apps.home.ampa.entities import HomeBloodPressureRegistry
+from apps.home.ampa.services import get_gemini_policy
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +24,10 @@ class _RegistrySession(BaseModel):
 
 controller = get_ampa_file_controller(
     models=settings.GEMINI_MODELS,
-    llm_api_key=settings.GOOGLE_API_KEY,
+    llm_api_key=settings.GEMINI_API_KEY,
     json_dir=settings.LOCAL_JSON_DIR,
     json_debug_active=settings.JSON_DEBUG_ACTIVE,
+    llm_policy=get_gemini_policy(ZoneInfo("America/Los_Angeles")),
 )
 
 
