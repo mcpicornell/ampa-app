@@ -2,6 +2,7 @@ from .agents import (
     AmpaReaderAgent,
     get_ampa_reader_agent,
 )
+from .ampa_files_storage import AMPAImagesStorage, get_ampa_images_storage
 from .ampa_result_calculator import AmpaResultCalculator, get_ampa_result_calculator
 from .home_blood_pressure_filter import (
     HomeBloodPressureFilter,
@@ -28,4 +29,6 @@ __all__ = [
     "LLMPolicy",
     "GeminiPolicy",
     "get_gemini_policy",
+    "AMPAImagesStorage",
+    "get_ampa_images_storage",
 ]

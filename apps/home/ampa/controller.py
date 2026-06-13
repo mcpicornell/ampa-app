@@ -1,80 +1,88 @@
-from dataclasses import asdict
-from functools import lru_cache
+import datetime
+from dataclasses import asdict, dataclass
 from typing import BinaryIO
 
-from .entities import AmpaResult, HomeBloodPressureRegistry
+from .entities import (
+    AmpaResult,
+    FilteredHomeBloodPressureRegistry,
+    HomeBloodPressureRegistry,
+)
 from .services import (
+    AMPAImagesStorage,
     AmpaReaderAgent,
     AmpaResultCalculator,
     HomeBloodPressureFilter,
-    LLMPolicy,
     LocalJsonService,
-    get_ampa_reader_agent,
-    get_ampa_result_calculator,
-    get_home_blood_pressure_filter,
-    get_local_json_service,
 )
+from .utils import file_binary_to_base64
+
+
+@dataclass(frozen=True, slots=True)
+class AmpaFileControllerDependencies:
+    storage_service: AMPAImagesStorage
+    local_json_service: LocalJsonService
+    filter_service: HomeBloodPressureFilter
+    calculator: AmpaResultCalculator
+    ampa_reader_agent: AmpaReaderAgent
+    json_debug_active: bool = False
 
 
 class AmpaFileController:
     def __init__(
         self,
-        local_json_service: LocalJsonService,
-        filter_service: HomeBloodPressureFilter,
-        calculator: AmpaResultCalculator,
-        ampa_reader_agent: AmpaReaderAgent,
-        json_debug_active: bool = False,
+        dependencies: AmpaFileControllerDependencies,
     ):
-        self._local_json_service = local_json_service
-        self._filter_service = filter_service
-        self._calculator = calculator
-        self._ampa_reader_agent = ampa_reader_agent
-        self._json_debug_active = json_debug_active
+        self._dependencies = dependencies
 
-    def calculate_ampa_result(
-        self, registry: HomeBloodPressureRegistry, datetime_str: str
-    ) -> AmpaResult:
-        registry_filtered = self._filter_service.filter(registry)
-        self._write_json(
-            f"ampa_registry_filtered_{datetime_str}.json",
-            asdict(registry_filtered),
+    def save_ampa_file(self, file: BinaryIO) -> str:
+        img_base64 = file_binary_to_base64(file)
+        registry_id = self._dependencies.storage_service.save_img(img_base64)
+        return registry_id
+
+    def calculate_ampa_result(self, registry_id: str) -> AmpaResult:
+        image_base64: str = self._dependencies.storage_service.get_img(registry_id)
+        if not image_base64:
+            raise ValueError(f"Image for registry '{registry_id}' not found")
+
+        registry: HomeBloodPressureRegistry = self._read_ampa_img_from_agent(
+            image_base64
         )
-        result = self._calculator.calculate(registry_filtered)
-        self._write_json(f"ampa_result_{datetime_str}.json", asdict(result))
+        registry_filtered: FilteredHomeBloodPressureRegistry = self._filter_registry(
+            registry
+        )
+        result: AmpaResult = self._calculate_result(registry_filtered)
         return result
 
-    def upload_ampa_file(
-        self, file: BinaryIO, datetime_str: str
-    ) -> HomeBloodPressureRegistry:
-
-        registry = self._ampa_reader_agent.read_ampa(file)
-
-        self._write_json(f"ampa_registry_{datetime_str}.json", registry.model_dump())
-
+    def _read_ampa_img_from_agent(self, image_base64: str) -> HomeBloodPressureRegistry:
+        registry = self._dependencies.ampa_reader_agent.read_ampa(image_base64)
+        self._write_json("ampa_registry", registry.model_dump())
         return registry
 
+    def _filter_registry(
+        self, registry: HomeBloodPressureRegistry
+    ) -> FilteredHomeBloodPressureRegistry:
+        registry_filtered = self._dependencies.filter_service.filter(registry)
+        self._write_json("ampa_registry_filtered", asdict(registry_filtered))
+        return registry_filtered
+
+    def _calculate_result(
+        self, registry_filtered: FilteredHomeBloodPressureRegistry
+    ) -> AmpaResult:
+        result = self._dependencies.calculator.calculate(registry_filtered)
+        self._write_json("ampa_result", asdict(result))
+        return result
+
     def _write_json(self, filename: str, data: dict):
-        if self._json_debug_active:
-            self._local_json_service.write_json(filename, data)
+        if self._dependencies.json_debug_active:
+            datetime_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            filename_with_datetime = f"{filename}_{datetime_str}.json"
+            self._dependencies.local_json_service.write_json(
+                filename_with_datetime, data
+            )
 
 
-@lru_cache
 def get_ampa_file_controller(
-    models: tuple[str, ...],
-    llm_api_key: str,
-    json_dir: str,
-    llm_policy: LLMPolicy,
-    json_debug_active: bool = False,
+    dependencies: AmpaFileControllerDependencies,
 ) -> AmpaFileController:
 
-    return AmpaFileController(
-        local_json_service=get_local_json_service(json_dir),
-        filter_service=get_home_blood_pressure_filter(),
-        calculator=get_ampa_result_calculator(),
-        ampa_reader_agent=get_ampa_reader_agent(
-            models=models,
-            api_key=llm_api_key,
-            llm_policy=llm_policy,
-        ),
-        json_debug_active=json_debug_active,
-    )
+    return AmpaFileController(dependencies)

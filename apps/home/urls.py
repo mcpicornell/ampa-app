@@ -10,7 +10,7 @@ from apps.home import views
 
 urlpatterns = [
     path("upload-ampa/", views.ampa_upload, name="ampa_upload"),
-    path("ampa-result/<str:result_id>/", views.ampa_result, name="ampa_result"),
+    path("ampa-result/<str:registry_id>/", views.ampa_result, name="ampa_result"),
     # The home page
     path("", RedirectView.as_view(pattern_name="ampa_upload", permanent=False)),
     path("", views.index, name="home"),

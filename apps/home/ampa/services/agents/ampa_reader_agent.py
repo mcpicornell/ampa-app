@@ -1,5 +1,3 @@
-from typing import BinaryIO
-
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from ...entities import HomeBloodPressureRegistry
@@ -9,7 +7,6 @@ from ..llms import (
     get_llm_with_fallback,
 )
 from ..llms import get_google_llm as llm_factory
-from ..utils import encode_image
 from .prompts import READ_AMPA_SYSTEM_PROMPT
 
 
@@ -17,10 +14,8 @@ class AmpaReaderAgent:
     def __init__(self, llm: LLMInvoker):
         self._llm = llm
 
-    def read_ampa(self, file: BinaryIO) -> HomeBloodPressureRegistry:
+    def read_ampa(self, image_base64: str) -> HomeBloodPressureRegistry:
         try:
-            file.seek(0)
-            image_base64 = encode_image(file)
             messages = self._build_messages(READ_AMPA_SYSTEM_PROMPT, image_base64)
             result = self._llm.invoke_structured(
                 messages,
