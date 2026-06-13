@@ -23,7 +23,9 @@ logger = logging.getLogger(__name__)
 controller = get_ampa_file_controller(
     AmpaFileControllerDependencies(
         storage_service=get_ampa_images_storage(),
-        local_json_service=get_local_json_service(settings.LOCAL_JSON_DIR),
+        local_json_service=get_local_json_service(settings.LOCAL_JSON_DIR)
+        if settings.ENV_IS_LOCAL
+        else None,
         filter_service=get_home_blood_pressure_filter(),
         calculator=get_ampa_result_calculator(),
         ampa_reader_agent=get_ampa_reader_agent(

@@ -128,14 +128,17 @@ CACHES = {
 }
 CACHE_EXPIRATION = 60 * 30  # 30 min
 
+# ENV
+ENVIRONMENT = config("ENVIRONMENT", default="prod")
+ENV_IS_LOCAL = ENVIRONMENT == "local"
+
+
 # LLM
 GOOGLE_LLM_MODEL = config("LLM_MODEL", default="gemini-2.5-flash")
 GEMINI_API_KEY = config("GEMINI_API_KEY")
-LLM_RESPONSE_HARDCODED = config("LLM_RESPONSE_HARDCODED", default=False, cast=bool)
 
 # DEBUG
 LOCAL_JSON_DIR = os.path.join(CORE_DIR, "json_tests")
-JSON_DEBUG_ACTIVE = config("JSON_DEBUG_ACTIVE", default=False, cast=bool)
 
 # LLM Models
 GEMINI_3_1_FLASH_LITE = "gemini-3.1-flash-lite"

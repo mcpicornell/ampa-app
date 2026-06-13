@@ -25,24 +25,40 @@ This application processes home blood pressure self-monitoring records performed
 ampa-app/
 ├── apps/
 │   ├── authentication/               # User authentication system
+│   ├── config.py                    # Apps configuration
 │   ├── home/                        # Main application
 │   │   ├── ampa/                    # AMPA core logic
 │   │   │   ├── controller.py        # Main application controller
+│   │   │   ├── constants.py         # AMPA constants
 │   │   │   ├── entities/           # Pydantic data models
 │   │   │   │   ├── ampa_result.py
-│   │   │   │   ├── home_blood_pressure_registry.py
-│   │   │   │   └── home_blood_pressure_filtered.py
-│   │   │   └── services/           # Business logic
-│   │   │       ├── agents/        # AI agents for data extraction
-│   │   │       │   ├── ampa_reader_agent.py
-│   │   │       │   └── prompts.py
-│   │   │       ├── llms/          # LLM integration
-│   │   │       │   ├── llm_factory.py
-│   │   │       │   └── llm_with_fallback.py
-│   │   │       ├── ampa_result_calculator.py
-│   │   │       └── home_blood_pressure_filter.py
-│   │   ├── views/                  # Django views
-│   │   └── urls.py                 # URL routing
+│   │   │   │   ├── home_blood_pressure_filtered.py
+│   │   │   │   └── home_blood_pressure_registry.py
+│   │   │   ├── services/           # Business logic
+│   │   │   │   ├── agents/        # AI agents for data extraction
+│   │   │   │   │   ├── ampa_reader_agent.py
+│   │   │   │   │   └── prompts.py
+│   │   │   │   ├── llms/          # LLM integration
+│   │   │   │   │   ├── llm_factory.py
+│   │   │   │   │   └── llm_with_fallback.py
+│   │   │   │   ├── ampa_files_storage.py    # Image storage service
+│   │   │   │   ├── ampa_result_calculator.py # Result calculation
+│   │   │   │   ├── home_blood_pressure_filter.py # Data filtering
+│   │   │   │   ├── local_json.py            # JSON debug service
+│   │   │   │   └── utils.py                 # Service utilities
+│   │   │   └── utils.py             # General utilities
+│   │   ├── config.py                # Home app configuration
+│   │   ├── management/              # Django management commands
+│   │   │   └── commands/
+│   │   ├── migrations/              # Database migrations
+│   │   ├── views/                   # Django views
+│   │   │   ├── ampa.py             # AMPA upload and result views
+│   │   │   ├── index.py            # Index view
+│   │   │   └── pages.py            # Page views
+│   │   ├── admin.py                 # Django admin configuration
+│   │   ├── models.py                # Django models
+│   │   ├── tests.py                 # Test suite
+│   │   └── urls.py                  # URL routing
 │   ├── static/                     # Static assets
 │   └── templates/                  # HTML templates
 ├── core/                           # Django configuration
@@ -50,12 +66,21 @@ ampa-app/
 │   ├── urls.py                    # Main URL configuration
 │   ├── asgi.py                    # ASGI configuration
 │   └── wsgi.py                    # WSGI configuration
+├── json_tests/                     # JSON debug files (local only)
+├── media/                          # User uploaded media
+├── nginx/                          # Nginx configuration
+├── CHANGELOG.md                    # Project changelog
+├── Dockerfile                      # Container image
+├── Procfile                        # Heroku/Procfile configuration
 ├── docker-compose.yml              # Docker configuration
 ├── podman-compose.yml             # Podman configuration
-├── Dockerfile                     # Container image
+├── gunicorn-cfg.py                # Gunicorn configuration
 ├── requirements.txt               # Python dependencies
+├── runtime.txt                    # Python runtime version
 ├── manage.py                      # Django management script
-└── .env                           # Environment variables
+├── .env                           # Environment variables (local)
+├── .env.local                     # Local environment variables
+└── .example.env                   # Example environment variables
 ```
 
 ## Data Models
@@ -153,20 +178,37 @@ The application will be available at `http://localhost:8000`
 ### Controller usage example:
 
 ```python
-from apps.home.ampa.controller import get_ampa_file_controller
+from apps.home.ampa import (
+    AmpaFileControllerDependencies,
+    get_ampa_file_controller,
+    get_ampa_images_storage,
+    get_ampa_reader_agent,
+    get_ampa_result_calculator,
+    get_gemini_policy,
+    get_home_blood_pressure_filter,
+    get_local_json_service,
+)
+from zoneinfo import ZoneInfo
 
 controller = get_ampa_file_controller(
-    models=("gemini-2.5-flash",),
-    llm_api_key="your-google-api-key",
-    json_dir="json_tests",
-    json_debug_active=False,
+    AmpaFileControllerDependencies(
+        storage_service=get_ampa_images_storage(),
+        local_json_service=get_local_json_service("json_tests"),  # Optional: set to None for production
+        filter_service=get_home_blood_pressure_filter(),
+        calculator=get_ampa_result_calculator(),
+        ampa_reader_agent=get_ampa_reader_agent(
+            models=("gemini-2.5-flash",),
+            api_key="your-google-api-key",
+            llm_policy=get_gemini_policy(ZoneInfo("America/Los_Angeles")),
+        ),
+    )
 )
 
-# Upload and process AMPA file
-registry = controller.upload_ampa_file(file, datetime_str)
+# Save and process AMPA file
+registry_id = controller.save_ampa_file(file)
 
 # Calculate AMPA result
-result = controller.calculate_ampa_result(registry, datetime_str)
+result = controller.calculate_ampa_result(registry_id)
 print(f"Morning systolic: {result.morning.systolic}")
 print(f"Morning diastolic: {result.morning.diastolic}")
 print(f"Afternoon systolic: {result.afternoon.systolic}")
@@ -199,8 +241,7 @@ SERVER=127.0.0.1
 CSRF_TRUSTED_ORIGINS=http://localhost:8000
 GEMINI_API_KEY=your-google-api-key
 LLM_MODEL=gemini-2.5-flash
-LLM_RESPONSE_HARDCODED=False
-JSON_DEBUG_ACTIVE=False
+ENVIRONMENT=prod
 ```
 
 ### Available Gemini Models
@@ -222,8 +263,8 @@ docker-compose up --build
 
 ## Configuration
 
-### Debug Mode
-Set `JSON_DEBUG_ACTIVE=True` in `.env` to save JSON files of processed data to the `json_tests/` directory for debugging purposes.
+### Environment
+Set `ENVIRONMENT=local` in `.env` to enable JSON debug files. When set to `local`, processed data will be saved to the `json_tests/` directory for debugging purposes. In production (`ENVIRONMENT=prod`), JSON files are not saved.
 
 ### Session Management
 Sessions expire after 24 hours (configurable via `SESSION_EXPIRANCY` in settings).

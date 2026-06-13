@@ -20,11 +20,10 @@ from .utils import file_binary_to_base64
 @dataclass(frozen=True, slots=True)
 class AmpaFileControllerDependencies:
     storage_service: AMPAImagesStorage
-    local_json_service: LocalJsonService
     filter_service: HomeBloodPressureFilter
     calculator: AmpaResultCalculator
     ampa_reader_agent: AmpaReaderAgent
-    json_debug_active: bool = False
+    local_json_service: LocalJsonService = None
 
 
 class AmpaFileController:
@@ -73,7 +72,7 @@ class AmpaFileController:
         return result
 
     def _write_json(self, filename: str, data: dict):
-        if self._dependencies.json_debug_active:
+        if self._dependencies.local_json_service is not None:
             datetime_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             filename_with_datetime = f"{filename}_{datetime_str}.json"
             self._dependencies.local_json_service.write_json(
