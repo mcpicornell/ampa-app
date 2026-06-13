@@ -1,9 +1,29 @@
+import base64
+import io
+from typing import BinaryIO
+
+from PIL import Image
+
 from .entities.home_blood_pressure_registry import (
     BloodPressureReading,
     DailyBloodPressureRecord,
     HomeBloodPressureRegistry,
     MeasurementPeriod,
 )
+
+
+def file_binary_to_base64(file: BinaryIO) -> str:
+    file.seek(0)
+    img = Image.open(file)
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")
+
+    img.thumbnail((1024, 1024))
+    buffer = io.BytesIO()
+    img.save(buffer, format="JPEG", quality=75)
+    buffer.seek(0)
+    img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return img_base64
 
 
 def build_fake_registry():
