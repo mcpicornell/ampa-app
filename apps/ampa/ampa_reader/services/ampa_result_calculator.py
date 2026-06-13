@@ -1,14 +1,14 @@
 from functools import lru_cache
 from typing import Literal
 
-from ..constants import DIASTOLIC, EVENING, MORNING, SYSTOLIC
-from ..entities import (
+from ..ampa_types import (
     AfternoonResult,
     AmpaResult,
     DailyResult,
     FilteredHomeBloodPressureRegistry,
     MorningResult,
 )
+from ..constants import DIASTOLIC, EVENING, MORNING, SYSTOLIC
 
 
 class AmpaResultCalculator:

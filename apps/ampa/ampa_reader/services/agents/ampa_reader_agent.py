@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from ...entities import HomeBloodPressureRegistry
+from ...ampa_types import HomeBloodPressureRegistry
 from ..llms import (
     LLMInvoker,
     LLMPolicy,

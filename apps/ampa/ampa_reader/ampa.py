@@ -53,9 +53,9 @@ def ampa_upload(request):
                 error_message = "AI free quota exceeded, try it again tomorrow"
 
             messages.error(request, error_message)
-            return render(request, "home/ampa-file-upload.html")
+            return render(request, "ampa/ampa-file-upload.html")
 
-    return render(request, "home/ampa-file-upload.html")
+    return render(request, "ampa/ampa-file-upload.html")
 
 
 @login_required(login_url="/login/")
@@ -64,11 +64,11 @@ def ampa_result(request, registry_id):
         result = controller.calculate_ampa_result(registry_id)
         return render(
             request,
-            "home/ampa-result.html",
+            "ampa/ampa-result.html",
             {"result": result, "registry_id": registry_id},
         )
     except Exception as e:
         error_message = f"Error calculating AMPA result: {e}"
         logger.error(error_message)
         messages.error(request, error_message)
-        return render(request, "home/ampa-file-upload.html")
+        return render(request, "ampa/ampa-file-upload.html")

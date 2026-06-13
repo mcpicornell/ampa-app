@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from ..entities import (
+from ..ampa_types import (
     BloodPressureReadingFiltered,
     DailyBloodPressureRecord,
     DailyBloodPressureRecordFiltered,

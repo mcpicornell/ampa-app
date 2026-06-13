@@ -2,7 +2,7 @@ import datetime
 from dataclasses import asdict, dataclass
 from typing import BinaryIO
 
-from .entities import (
+from .ampa_types import (
     AmpaResult,
     FilteredHomeBloodPressureRegistry,
     HomeBloodPressureRegistry,

@@ -4,7 +4,7 @@ from typing import BinaryIO
 
 from PIL import Image
 
-from .entities.home_blood_pressure_registry import (
+from .ampa_types.home_blood_pressure_registry import (
     BloodPressureReading,
     DailyBloodPressureRecord,
     HomeBloodPressureRegistry,

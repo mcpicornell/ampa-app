@@ -30,7 +30,7 @@ ampa-app/
 │   │   ├── ampa/                    # AMPA core logic
 │   │   │   ├── controller.py        # Main application controller
 │   │   │   ├── constants.py         # AMPA constants
-│   │   │   ├── entities/           # Pydantic data models
+│   │   │   ├── ampa_types/           # Pydantic data models
 │   │   │   │   ├── ampa_result.py
 │   │   │   │   ├── home_blood_pressure_filtered.py
 │   │   │   │   └── home_blood_pressure_registry.py

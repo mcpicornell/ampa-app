@@ -5,8 +5,8 @@ from pathlib import Path
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management.base import BaseCommand
 
+from apps.home.ampa.ampa_types import HomeBloodPressureRegistry
 from apps.home.ampa.controller import get_ampa_file_controller
-from apps.home.ampa.entities import HomeBloodPressureRegistry
 
 
 class Command(BaseCommand):
